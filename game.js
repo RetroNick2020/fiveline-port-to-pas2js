@@ -2251,9 +2251,9 @@ rtl.module("fiveline",["System","Web","graph","palette","PathFind","squeue"],fun
   "use strict";
   var $mod = this;
   var $impl = $mod.$impl;
-  this.ProgramName = "Fiveline v1.0";
+  this.ProgramName = "Fiveline v1.1";
   this.ProgramAuthor = "RetroNick";
-  this.ProgramReleaseDate = "October 4 - 2021";
+  this.ProgramReleaseDate = "October 5 - 2021";
   this.HSize = 9;
   this.VSize = 9;
   this.GBItemRadius = 10;
@@ -2842,10 +2842,13 @@ rtl.module("fiveline",["System","Web","graph","palette","PathFind","squeue"],fun
       pas.graph.OutTextXY($mod.score.xoff + 10,$mod.score.yoff + 50,$impl.IntToStr($mod.score.pos) + "x" + $impl.IntToStr($mod.score.mx));
     };
     $impl.UpdateScore = function (pos, count) {
-      $mod.score.pos = pos;
-      $mod.score.mx = Math.abs(4 - count) * 10;
-      $mod.score.score += $mod.score.mx;
-      $impl.DisplayScore(true);
+      function TM() {
+        $mod.score.pos = pos;
+        $mod.score.mx = Math.abs(4 - count) * 10;
+        $mod.score.score += $mod.score.mx;
+        $impl.DisplayScore(true);
+      };
+      window.setTimeout(rtl.createSafeCallback(null,TM),pos * 300);
     };
     $impl.DrawRowBoarder = function (x, y, stepx, stepy, count, item) {
       var i = 0;
@@ -2873,6 +2876,15 @@ rtl.module("fiveline",["System","Web","graph","palette","PathFind","squeue"],fun
         y += stepy;
       };
     };
+    $impl.copygbtotgb = function (SGB, TGB) {
+      var i = 0;
+      var j = 0;
+      for (j = 0; j <= 8; j++) {
+        for (i = 0; i <= 8; i++) {
+          TGB.get()[i][j].$assign(SGB.get()[i][j]);
+        };
+      };
+    };
     $impl.FindRowOfColors = function (apoints) {
       var Result = 0;
       var TGB = rtl.arraySetLength(null,$mod.GameBoardRec,9,9);
@@ -2881,7 +2893,15 @@ rtl.module("fiveline",["System","Web","graph","palette","PathFind","squeue"],fun
       var count = 0;
       var rowcount = 0;
       rowcount = 0;
-      TGB = $mod.GB.slice(0);
+      $impl.copygbtotgb({p: $mod, get: function () {
+          return this.p.GB;
+        }, set: function (v) {
+          this.p.GB = v;
+        }},{get: function () {
+          return TGB;
+        }, set: function (v) {
+          TGB = v;
+        }});
       for (j = 0; j <= 8; j++) {
         for (i = 0; i <= 4; i++) {
           count = $impl.FindColorCount({get: function () {
@@ -2900,7 +2920,15 @@ rtl.module("fiveline",["System","Web","graph","palette","PathFind","squeue"],fun
           };
         };
       };
-      TGB = $mod.GB.slice(0);
+      $impl.copygbtotgb({p: $mod, get: function () {
+          return this.p.GB;
+        }, set: function (v) {
+          this.p.GB = v;
+        }},{get: function () {
+          return TGB;
+        }, set: function (v) {
+          TGB = v;
+        }});
       for (i = 0; i <= 8; i++) {
         for (j = 0; j <= 4; j++) {
           count = $impl.FindColorCount({get: function () {
@@ -2919,7 +2947,15 @@ rtl.module("fiveline",["System","Web","graph","palette","PathFind","squeue"],fun
           };
         };
       };
-      TGB = $mod.GB.slice(0);
+      $impl.copygbtotgb({p: $mod, get: function () {
+          return this.p.GB;
+        }, set: function (v) {
+          this.p.GB = v;
+        }},{get: function () {
+          return TGB;
+        }, set: function (v) {
+          TGB = v;
+        }});
       for (j = 0; j <= 4; j++) {
         for (i = 0; i <= 4; i++) {
           count = $impl.FindColorCount({get: function () {
@@ -2938,7 +2974,15 @@ rtl.module("fiveline",["System","Web","graph","palette","PathFind","squeue"],fun
           };
         };
       };
-      TGB = $mod.GB.slice(0);
+      $impl.copygbtotgb({p: $mod, get: function () {
+          return this.p.GB;
+        }, set: function (v) {
+          this.p.GB = v;
+        }},{get: function () {
+          return TGB;
+        }, set: function (v) {
+          TGB = v;
+        }});
       for (j = 0; j <= 4; j++) {
         for (i = 4; i <= 8; i++) {
           count = $impl.FindColorCount({get: function () {

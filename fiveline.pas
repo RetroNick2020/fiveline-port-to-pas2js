@@ -21,9 +21,9 @@ Interface
   uses web,graph,palette,pathfind,squeue;
 
 Const
-  ProgramName ='Fiveline v1.0';
+  ProgramName ='Fiveline v1.1';
   ProgramAuthor = 'RetroNick';
-  ProgramReleaseDate = 'October 4 - 2021';
+  ProgramReleaseDate = 'October 5 - 2021';
 
   HSize = 9;   (*if you cange hsize or vsize make sure to change in*)
   VSize = 9;   (*pathfind unit also*)
@@ -48,6 +48,7 @@ Const
   GBItemLightBlue = 14;
   GBItemLightGray = 15;
   GBItemBrick     = 16;
+ 
 
   UP = 72;
   DOWN = 80;
@@ -263,9 +264,6 @@ begin
   GB_FillEllipse(x*GBSQWidth+xoff,y*GBSQHeight+yoff,r,r);
 end;
 
-
-
-
 Procedure DrawGameBoardItem(x,y,item : integer);
 begin
   if item=GBItemEmpty then
@@ -340,7 +338,6 @@ begin
     DrawFillEllip(x,y,GBItemRadius);
   end;
 end;
-
 
 Procedure InitDrawQueue;
 begin
@@ -418,13 +415,12 @@ procedure DrawLocked;
 begin
   if GBItemLock.isLocked then
   begin
-//    DrawGameBoardItem(GBItemLock.x,GBItemLock.y,GBItemLocked);
+    //DrawGameBoardItem(GBItemLock.x,GBItemLock.y,GBItemLocked);
     QueueDrawItem(GBItemLock.x,GBItemLock.y,GBItemLocked,0);
   end
   else
   begin
     //DrawGameBoardItem(GBItemLock.x,GBItemLock.y,GBItemUnLocked);
-
     QueueDrawItem(GBItemLock.x,GBItemLock.y,GBItemUnLocked,0);
   end;
 end;
@@ -726,13 +722,21 @@ begin
  OutTextXY(Score.xoff+10,score.yoff+50,IntToStr(score.pos)+'x'+IntToStr(score.mx));
 end;
 
+
 procedure UpdateScore(pos, count : integer);
+
+procedure TM;
 begin
  score.pos:=pos;
  score.mx:=abs(4-count)*10; (*5 line rows = 10 points per ball, 6 line = 20, 7 line =30*)
  Inc(score.Score,score.mx);
  DisplayScore(true);
 end;
+
+begin
+  window.setTimeout(@TM,pos*300);
+end;
+
 
 procedure DrawRowBoarder(x,y,stepx,stepy,count : integer; item : integer);
 var
@@ -775,84 +779,114 @@ begin
  end;
 end;
 
+//TODO:
+// this is a work arround to performing TGB:=GB in FindRowOfColors
+// the second/third/fourth assignment doesn't take affect
+// maybe a compiler bug. need to test - yes confirmed this is a bug.
+// using pas2js 2.0.6 - should be fixed in next version
+procedure copygbtotgb(var SGB, TGB  : GameBoard);
+var i,j : integer;
+begin
+for j:=0 to VSize-1 do   
+ begin
+   for i:=0 to HSize-1 do 
+   begin
+     TGB[i,j]:=SGB[i,j];
+   end;
+ end;    
+end;
 
 function FindRowOfColors(var apoints : aitempoints) : integer;
 var
- TGB : GameBoard;
+ TGB  : GameBoard;
  i,j : integer;
  count : integer;
  rowcount : integer;
 begin
  rowcount:=0;
- (*Make Copy GM*)
- TGB:=GB;
+// (*Make Copy GM*)
+// TGB:=GB;
+copygbtotgb(GB,TGB);
 
- (*horizonatal check*)
- for j:=0 to VSize-1 do   (*//VSIZE-1    0 to 8*)
+ //(*horizonatal check*)
+ for j:=0 to VSize-1 do   
+ //(*//VSIZE-1    0 to 8*)
  begin
-   for i:=0 to HSize-5 do (*HSIZE-5    0 to 4*)
+   for i:=0 to HSize-5 do 
+   //(*HSIZE-5    0 to 4*)
    begin
      count:=FindColorCount(TGB,i,j,1,0,9);
      if count > 4 then
      begin
         inc(rowcount);
         AddRowsToQueue(i,j,1,0,count,apoints);
-        (*Remove Line from from TGB - solves 6 to 9 in a row duplicate problem*)
+     //   (*Remove Line from from TGB - solves 6 to 9 in a row duplicate problem*)
         DeleteRowFromBoard(TGB,i,j,1,0,count);
      end;
    end;
  end;
 
- (*Make Copy GM Again - not a mistake*)
- TGB:=GB;
-  (*vertical check*)
- for i:=0 to HSize-1 do   (*HSIZE-1    0 to 8*)
+// (*Make Copy GM Again - not a mistake*)
+// TGB:=GB;
+copygbtotgb(GB,TGB);
+
+//  (*vertical check*)
+ for i:=0 to HSize-1 do   
+ //(*HSIZE-1    0 to 8*)
  begin
-   for j:=0 to VSize-5 do (*VSIZE-5    0 to 4*)
+   for j:=0 to VSize-5 do 
+   //(*VSIZE-5    0 to 4*)
    begin
      count:=FindColorCount(TGB,i,j,0,1,9);
      if count > 4 then
      begin
        inc(rowcount);
        AddRowsToQueue(i,j,0,1,count,apoints);
-       (*Remove Line from from TGB - solves 6 to 9 in a row duplicate problem*)
+     //  (*Remove Line from from TGB - solves 6 to 9 in a row duplicate problem*)
        DeleteRowFromBoard(TGB,i,j,0,1,count);
      end;
    end;
  end;
 
- (*Make Copy GM 3rd time*)
- TGB:=GB;
+// (*Make Copy GM 3rd time*)
+// TGB:=GB;
+copygbtotgb(GB,TGB);
 
- (*horizonatal down/right*)
- for j:=0 to VSize-5 do     (*VSIZE-5   0 to 4*)
+// (*horizonatal down/right*)
+ for j:=0 to VSize-5 do     
+ //(*VSIZE-5   0 to 4*)
  begin
-   for i:=0 to HSize-5 do   (*HSIZE-5   0 to 4*)
+   for i:=0 to HSize-5 do   
+   //(*HSIZE-5   0 to 4*)
    begin
      count:=FindColorCount(TGB,i,j,1,1,9);
      if count > 4 then
      begin
         inc(rowcount);
         AddRowsToQueue(i,j,1,1,count,apoints);
-        (*Remove Line from from TGB - solves 6 to 9 in a row duplicate problem*)
+     //   (*Remove Line from from TGB - solves 6 to 9 in a row duplicate problem*)
         DeleteRowFromBoard(TGB,i,j,1,1,count);
      end;
    end;
  end;
 
-  (*Make Copy GM 4th time*)
- TGB:=GB;
-  (*horizonatal down/left*)
- for j:=0 to VSize-5 do      (*VSIZE-5  0 to 4*)
+//  (*Make Copy GM 4th time*)
+// TGB:=GB;
+copygbtotgb(GB,TGB);
+
+ // (*horizonatal down/left*)
+ for j:=0 to VSize-5 do      
+ //(*VSIZE-5  0 to 4*)
  begin
-   for i:=4 to HSize-1 do    (*HSIZE-1  4 to 8*)
+   for i:=4 to HSize-1 do    
+   //(*HSIZE-1  4 to 8*)
    begin
      count:=FindColorCount(TGB,i,j,-1,1,9);
      if count > 4 then
      begin
         inc(rowcount);
         AddRowsToQueue(i,j,-1,1,count,apoints);
-        (*Remove Line from from TGB - solves 6 to 9 in a row duplicate problem*)
+     //   (*Remove Line from from TGB - solves 6 to 9 in a row duplicate problem*)
         DeleteRowFromBoard(TGB,i,j,-1,1,count);
      end;
    end;
@@ -1018,6 +1052,7 @@ begin
  SetRowsClearedStatus(False);
  InitAIQueue;
  count:=FindRowOfColors(apoints);
+
  if count > 0 then
  begin
     DrawRowOfColors(apoints,GBItemBorder);
